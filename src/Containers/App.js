@@ -132,6 +132,7 @@ const Data = styled.div`
   text-align: center;
   margin-bottom: 1rem;
   flex-grow: 1;
+  overflow-wrap: break-word;
 
   & > div {
     margin: 0 .1rem;
