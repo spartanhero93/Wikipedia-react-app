@@ -6,9 +6,7 @@ class App extends Component {
   state = {
     term: '',
     count: 3,
-    titles: [],
-    descriptions: [],
-    links: []
+    data: []
   }
 
   handleRangeCount = event => {
@@ -26,23 +24,27 @@ class App extends Component {
   fetchData = () => {
     axios
       .get(
-        `https://en.wikipedia.org//w/api.php?action=opensearch&format=json&origin=*&search=${this.state.term}&limit=${this.state.count} `
+        `https://en.wikipedia.org//w/api.php?action=opensearch&format=json&origin=*&search=${this.state.term}&limit=${this.state.count}`
       )
       .then(res => {
-        const data = res.data
-        const titles = data[1]
-        const descriptions = data[2]
-        const links = data[3]
-        this.setState({
-          titles,
-          descriptions,
-          links
-        })
+        const results = res.data
+        results.shift()
+
+        const data = []
+
+        for (let i = 0; i < results[0].length; i++) {
+          data[i] = new Array(results[0].length).fill()
+
+          for (let j = 0; j < results.length; j++) {
+            data[i][j] = results[j][i]
+          }
+        }
+        this.setState({ data })
       })
   }
 
   render () {
-    console.log(this.state.links)
+    console.log(this.state.data[0])
     return (
       <Wrapper>
         <h1>Wikipedia Viewer</h1>
@@ -63,16 +65,14 @@ class App extends Component {
           max='50'
         />
         count: {this.state.count}
-        <DataContainer>
-          <Data>
-            {this.state.titles.map(title => {
-              return <Title>{title}</Title>
-            })}
-            {this.state.descriptions.map(description => (
-              <Description>{description}</Description>
-            ))}
-          </Data>
-        </DataContainer>
+        {this.state.data.map((items, index) => {
+          return (
+            <Data key={index}>
+              <Title>{items[0]}</Title>
+              <Description>{items[1]}</Description>
+            </Data>
+          )
+        })}
       </Wrapper>
     )
   }
@@ -104,15 +104,11 @@ const Button = styled.button`
     background: rgba(39, 41, 50, 0.85);
   }
 `
-const DataContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-`
-
 const Data = styled.div`
   display: flex;
   text-align: center;
   margin-bottom: 1rem;
+  flex-grow: 1;
 
   & > div {
     margin: 0 .1rem;
@@ -121,12 +117,13 @@ const Data = styled.div`
 `
 const Title = styled.div`
   background: rgba(39, 41, 50, 0.05);
-  width: 20%;
+  min-width: 20%;
   font-size: 1.5rem;
 `
 const Description = styled.div`
   background: rgba(39, 41, 50, 0.95);
   color: #FFFFF2;
+  min-width: 80%;
   font-size: 1.2rem;
   font-weight: 100;
 `
