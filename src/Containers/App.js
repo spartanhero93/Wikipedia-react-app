@@ -33,19 +33,26 @@ class App extends Component {
         }
         results.shift()
 
-        const data = []
-        for (let i = 0; i < results[0].length; i++) {
-          data[i] = new Array(3).fill()
-          for (let j = 0; j < results.length; j++) {
-            data[i][j] = results[j][i]
-          }
-        }
+        const data = results[0].map((_, index) => {
+          return results.map(column => {
+            return column[index]
+          })
+        })
         this.setState({ data })
+
+        // <=== Old fashion way ===>//
+        // const data = []
+        // for (let i = 0; i < results[0].length; i++) {
+        //   data[i] = new Array(3).fill()]
+        //   for (let j = 0; j < results.length; j++) {
+        //     data[i][j] = results[j][i]
+        //   }
+        // }
       })
   }
 
   render () {
-    console.log(this.state.data.length)
+    console.log(this.state.data)
 
     return (
       <Wrapper>
