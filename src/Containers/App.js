@@ -28,13 +28,14 @@ class App extends Component {
       )
       .then(res => {
         const results = res.data
+        if (results.length === undefined) {
+          return
+        }
         results.shift()
 
         const data = []
-
         for (let i = 0; i < results[0].length; i++) {
-          data[i] = new Array(results[0].length).fill()
-
+          data[i] = new Array(3).fill()
           for (let j = 0; j < results.length; j++) {
             data[i][j] = results[j][i]
           }
@@ -44,7 +45,8 @@ class App extends Component {
   }
 
   render () {
-    console.log(this.state.data[0])
+    console.log(this.state.data.length)
+
     return (
       <Wrapper>
         <h1>Wikipedia Viewer</h1>
@@ -56,19 +58,22 @@ class App extends Component {
           placeholder='Type here...'
         />
         <Button onClick={this.fetchData}>Submit Search</Button>
-        <Button>or generate a random article</Button>
         <input
           onChange={this.handleRangeCount}
           value={this.state.count}
           type='range'
           min='3'
           max='50'
+          required
         />
         count: {this.state.count}
+        <UserTip dataAvailable={this.state.data.length}>
+          Click on titles for a link to article
+        </UserTip>
         {this.state.data.map((items, index) => {
           return (
             <Data key={index}>
-              <Title>{items[0]}</Title>
+              <Title target='__blank' href={items[2]}>{items[0]}</Title>
               <Description>{items[1]}</Description>
             </Data>
           )
@@ -87,7 +92,12 @@ const Wrapper = styled.div`
   font-size: 1.8rem;
   text-align:center;
   margin: 2rem 8rem;
+  font-size: 1.5rem;
 
+  @media(max-width: 600px) {
+    margin: 1rem 1rem;
+    font-size: 1.1rem;
+  }
 `
 const Button = styled.button`
   background-color: rgba(39, 41, 50, 0.95);
@@ -104,6 +114,12 @@ const Button = styled.button`
     background: rgba(39, 41, 50, 0.85);
   }
 `
+const UserTip = styled.div`
+  text-align: center;
+  display: ${props => (props.dataAvailable > 0 ? `visible` : 'none')};
+  margin: .5rem 0;
+`
+
 const Data = styled.div`
   display: flex;
   text-align: center;
@@ -115,16 +131,22 @@ const Data = styled.div`
     padding: .5rem;
   }
 `
-const Title = styled.div`
+const Title = styled.a`
+  display: block;
+  text-decoration: none;
+  color: rgba(39, 41, 50, 0.95);
   background: rgba(39, 41, 50, 0.05);
   min-width: 20%;
-  font-size: 1.5rem;
+  line-height: 4rem;
+
+  :hover {
+    text-decoration: underline;
+  }
 `
 const Description = styled.div`
   background: rgba(39, 41, 50, 0.95);
   color: #FFFFF2;
   min-width: 80%;
-  font-size: 1.2rem;
   font-weight: 100;
 `
 
