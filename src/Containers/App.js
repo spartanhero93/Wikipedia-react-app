@@ -6,81 +6,71 @@ class App extends Component {
   state = {
     term: '',
     count: 3,
-    data: []
+    data: [],
+  }
+
+  reorganizeArrData = data => {
+    if (!data.length) return
+    data.shift()
+    return data[0].map((_, index) => data.map(column => column[index]))
   }
 
   handleRangeCount = event => {
     this.setState({
-      count: event.target.value
+      count: event.target.value,
     })
   }
 
   handleInputChange = event => {
     this.setState({
-      term: event.target.value
+      term: event.target.value,
     })
   }
-
-  fetchData = () => {
-    axios
-      .get(
-        `https://en.wikipedia.org//w/api.php?action=opensearch&format=json&origin=*&search=${this.state.term}&limit=${this.state.count}`
+  newFetchData = async () => {
+    try {
+      const URL = `https://en.wikipedia.org//w/api.php?action=opensearch&format=json&origin=*&search=`
+      const { data } = await axios.get(
+        `${URL}${this.state.term}&limit=${this.state.count}`
       )
-      .then(res => {
-        const results = res.data
-        if (results.length === undefined) {
-          return
-        }
-        results.shift()
-
-        const data = results[0].map((_, index) => {
-          return results.map(column => {
-            return column[index]
-          })
-        })
-        this.setState({ data })
-
-        // <=== Old fashion way ===>//
-        // const data = []
-        // for (let i = 0; i < results[0].length; i++) {
-        //   data[i] = new Array(3).fill()]
-        //   for (let j = 0; j < results.length; j++) {
-        //     data[i][j] = results[j][i]
-        //   }
-        // }
-      })
+      const result = await this.reorganizeArrData(data)
+      this.setState({ data: result })
+    } catch (error) {
+      console.error(error)
+    }
   }
 
-  render () {
-    console.log(this.state.data)
-
+  render() {
+    const { handleInputChange, handleRangeCount, newFetchData } = this
+    const { count, term, data } = this.state
     return (
       <Wrapper>
         <h1>Wikipedia Viewer</h1>
         <h5>Search Wikipedia:</h5>
         <input
-          onChange={this.handleInputChange}
+          onChange={handleInputChange}
           type='text'
-          value={this.state.term}
+          value={term}
           placeholder='Type here...'
         />
-        <Button onClick={this.fetchData}>Submit Search</Button>
+        <Button onClick={newFetchData}>Submit Search</Button>
         <input
-          onChange={this.handleRangeCount}
-          value={this.state.count}
+          onChange={handleRangeCount}
+          value={count}
           type='range'
           min='3'
           max='50'
           required
         />
-        count: {this.state.count}
-        <UserTip dataAvailable={this.state.data.length}>
+        count: {count}
+        <UserTip dataAvailable={data.length}>
           Click on titles for a link to article
         </UserTip>
-        {this.state.data.map((items, index) => {
+        {data.map((items, index) => {
           return (
             <Data key={index}>
-              <Title target='__blank' href={items[2]}>{items[0]}</Title>
+              <Title target='__blank' href={items[2]}>
+                {items[0]}
+              </Title>
               <Description>{items[1]}</Description>
             </Data>
           )
@@ -97,24 +87,24 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   font-size: 1.8rem;
-  text-align:center;
+  text-align: center;
   margin: 2rem 8rem;
   font-size: 1.5rem;
 
-  @media(max-width: 600px) {
+  @media (max-width: 600px) {
     margin: 1rem 1rem;
     font-size: 1.1rem;
   }
 `
 const Button = styled.button`
   background-color: rgba(39, 41, 50, 0.95);
-  color: #FFFFF2;
+  color: #fffff2;
   border: none;
-  border-radius: .3rem;
+  border-radius: 0.3rem;
   padding: 1rem;
   cursor: pointer;
   width: 60%;
-  align-self:center;
+  align-self: center;
   margin: 0.6rem 0;
 
   &:hover {
@@ -124,7 +114,7 @@ const Button = styled.button`
 const UserTip = styled.div`
   text-align: center;
   display: ${props => (props.dataAvailable > 0 ? `visible` : 'none')};
-  margin: .5rem 0;
+  margin: 0.5rem 0;
 `
 
 const Data = styled.div`
@@ -135,8 +125,8 @@ const Data = styled.div`
   overflow-wrap: break-word;
 
   & > div {
-    margin: 0 .1rem;
-    padding: .5rem;
+    margin: 0 0.1rem;
+    padding: 0.5rem;
   }
 `
 const Title = styled.a`
@@ -153,7 +143,7 @@ const Title = styled.a`
 `
 const Description = styled.div`
   background: rgba(39, 41, 50, 0.95);
-  color: #FFFFF2;
+  color: #fffff2;
   min-width: 80%;
   font-weight: 100;
 `
